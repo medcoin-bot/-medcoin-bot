@@ -8,11 +8,27 @@ def send(msg):
     try:
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
-    except: pass
+        print(f"Sent: {msg}")
+    except Exception as e:
+        print(f"Error: {e}")
 
-if BOT_TOKEN and CHAT_ID:
-    send(f"MED COIN BOT خدام! الوقت: {datetime.now()}")
-    
-print("Bot started")
+def get_med_price():
+    try:
+        r = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=medibloc&vs_currencies=usd", timeout=10).json()
+        return r['medibloc']['usd']
+    except:
+        return None
+
+if not BOT_TOKEN or not CHAT_ID:
+    print("Missing BOT_TOKEN or CHAT_ID")
+    exit()
+
+send(f"✅ MED COIN BOT بدا خدام! {datetime.now().strftime('%H:%M')}")
+print("Bot started - Tracking MED")
+
 while True:
-    time.sleep(60)
+    price = get_med_price()
+    if price:
+        msg = f"💰 MED = ${price}\n⏰ {datetime.now().strftime('%H:%M:%S')}"
+        send(msg)
+    time.sleep(300)
